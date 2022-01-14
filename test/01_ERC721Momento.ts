@@ -13,7 +13,7 @@ describe("ERC721Momento", () => {
   });
 
   // Test case
-  it("retrieve returns a name, symbol", async () => {
+  it("retrieve name, symbol", async () => {
     expect((await erc721Momento.name()).toString()).to.equal("Momento NFT");
     expect((await erc721Momento.symbol()).toString()).to.equal("MNTNFT");
   });

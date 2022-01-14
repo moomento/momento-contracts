@@ -155,9 +155,9 @@ contract MomentoMarketERC721 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     // Remove an auction from the offer that did not have previous bids. Beware could be a direct sale
     function removeFromAuction(uint256 _tokenId) public {
         Offer memory offer = offers[_tokenId];
-        require(msg.sender == offer.creator, "You are not the owner");
+        require(msg.sender == offer.creator, "MNTO: You are not the owner");
         Auction memory auction = auctions[offer.idAuction];
-        require(auction.bidCount == 0, "Bids existing");
+        require(auction.bidCount == 0, "MNTO: Bids existing");
         offer.isAuction = false;
         offer.idAuction = 0;
         offers[_tokenId] = offer;
@@ -213,14 +213,14 @@ contract MomentoMarketERC721 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             royaltiesToPay = (paidPrice * asset.getRoyalties(tokenId_)) / 10000;
 
             (bool success, ) = creatorNFT.call{value: royaltiesToPay}("");
-            require(success, "Transfer failed.");
+            require(success, "MNTO: Transfer failed");
 
             emit Royalties(creatorNFT, royaltiesToPay);
         }
         uint256 amountToPay = paidPrice - commissionToPay - royaltiesToPay;
 
         (bool success2, ) = offer.creator.call{value: amountToPay}("");
-        require(success2, "Transfer failed.");
+        require(success2, "MNTO: Transfer failed");
         emit PaymentToOwner(
             offer.creator,
             amountToPay,
@@ -239,7 +239,7 @@ contract MomentoMarketERC721 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
                 (bool success3, ) = auction.currentBidOwner.call{
                     value: auction.currentBidAmount
                 }("");
-                require(success3, "MNTO: Transfer failed.");
+                require(success3, "MNTO: Transfer failed");
                 emit ReturnBidFunds(
                     offer.idAuction,
                     auction.currentBidOwner,
@@ -447,7 +447,7 @@ contract MomentoMarketERC721 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
                 royaltiesToPay;
 
             (bool success, ) = auction.creator.call{value: amountToPay}("");
-            require(success, "Transfer failed.");
+            require(success, "MNTO: Transfer failed");
             emit PaymentToOwner(
                 auction.creator,
                 amountToPay,
@@ -474,7 +474,7 @@ contract MomentoMarketERC721 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     {
         Offer memory offer = offers[tokenId_];
         // is there is an auction open, we have to give back the last bid amount to the last bidder
-        require(offer.isAuction, "Offer is not an auction");
+        require(offer.isAuction, "MNTO: Offer is not an auction");
         Auction memory auction = auctions[offer.idAuction];
 
         if (auction.bidCount > 0) returnLastBid(offer, auction);
@@ -487,23 +487,23 @@ contract MomentoMarketERC721 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         internal
     {
         // is there is an auction open, we have to give back the last bid amount to the last bidder
-        require(offer.isAuction, "Offer is not an auction");
+        require(offer.isAuction, "MNTO: Offer is not an auction");
         // #4. Only if there is at least a bid and the bid amount > 0, give it back to last bidder
         require(
             auction.currentBidAmount != 0 &&
                 auction.bidCount > 0 &&
                 auction.currentBidOwner != address(0),
-            "No bids yet"
+            "MNTO: No bids yet"
         );
         require(
             offer.creator != auction.currentBidOwner,
-            "Offer owner cannot retrieve own funds"
+            "MNTO: Offer owner cannot retrieve own funds"
         );
         // return funds to the previuos bidder
         (bool success3, ) = auction.currentBidOwner.call{
             value: auction.currentBidAmount
         }("");
-        require(success3, "Transfer failed.");
+        require(success3, "MNTO: Transfer failed");
         emit ReturnBidFunds(
             offer.idAuction,
             auction.currentBidOwner,
@@ -517,7 +517,7 @@ contract MomentoMarketERC721 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function extractBalance() public nonReentrant onlyOwner {
         address payable me = payable(msg.sender);
         (bool success, ) = me.call{value: accumulatedCommission}("");
-        require(success, "Transfer failed.");
+        require(success, "MNTO: Transfer failed");
         accumulatedCommission = 0;
     }
 }
