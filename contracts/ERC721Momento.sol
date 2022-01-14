@@ -67,6 +67,7 @@ contract ERC721Momento is ERC721URIStorageUpgradeable {
             creator: payable(msg.sender),
             royalties: royalties_
         });
+        emit CreateItem(newItemId, tokenURI_, royalties_);
         return newItemId;
     }
 }
